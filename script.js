@@ -77,6 +77,19 @@ class KeyboardTrainer {
             highContrast: false,
             customWords: null
         };
+        
+        // Сохраняем ссылку на обработчик для правильного удаления
+        this.celebrationClickHandler = this.handleCelebrationClick.bind(this);
+        
+        // Список картинок для наград
+        this.rewardImages = [
+            'img/m.png',
+            'img/dok.png',
+            'img/flash.png',
+            'img/p1.png',
+            'img/t1.png',
+            'img/t2.png'
+        ];
 
         this.init();
     }
@@ -375,6 +388,14 @@ class KeyboardTrainer {
         const overlay = document.getElementById('celebration-overlay');
         if (overlay) {
             this.isCelebrating = true;
+            
+            // Выбираем случайную картинку
+            const randomImage = this.getRandomRewardImage();
+            const rewardImage = document.getElementById('reward-image');
+            if (rewardImage) {
+                rewardImage.src = randomImage;
+            }
+            
             overlay.classList.add('show');
             // Перезапускаем анимацию салюта
             const fireworks = overlay.querySelectorAll('.firework');
@@ -384,6 +405,31 @@ class KeyboardTrainer {
                     firework.style.animation = '';
                 }, 10);
             });
+            
+            // Добавляем обработчик клика для закрытия (используем capture для надежности)
+            overlay.addEventListener('click', this.celebrationClickHandler, true);
+            
+            // Также добавляем обработчик на саму картинку
+            if (rewardImage) {
+                rewardImage.addEventListener('click', this.celebrationClickHandler, true);
+            }
+        }
+    }
+    
+    getRandomRewardImage() {
+        const randomIndex = Math.floor(Math.random() * this.rewardImages.length);
+        return this.rewardImages[randomIndex];
+    }
+    
+    handleCelebrationClick(e) {
+        // Предотвращаем всплытие события
+        e.stopPropagation();
+        if (this.isCelebrating) {
+            this.hideCelebration();
+            if (this.pendingNextWord) {
+                this.nextWord();
+                this.pendingNextWord = false;
+            }
         }
     }
 
@@ -392,6 +438,14 @@ class KeyboardTrainer {
         if (overlay) {
             this.isCelebrating = false;
             overlay.classList.remove('show');
+            // Удаляем обработчик клика
+            overlay.removeEventListener('click', this.celebrationClickHandler, true);
+            
+            // Удаляем обработчик с картинки
+            const rewardImage = document.getElementById('reward-image');
+            if (rewardImage) {
+                rewardImage.removeEventListener('click', this.celebrationClickHandler, true);
+            }
         }
     }
 

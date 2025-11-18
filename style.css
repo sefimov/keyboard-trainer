@@ -582,7 +582,157 @@ h1 {
     font-weight: 600;
 }
 
-@media (max-width: 768px) {
+/* Большие планшеты и маленькие ноутбуки (1024px - 1280px) */
+@media (min-width: 1024px) and (max-width: 1280px) {
+    .container {
+        max-width: 1000px;
+        padding: 28px;
+    }
+
+    .keyboard-container {
+        max-width: 950px;
+    }
+
+    .settings-panel {
+        max-width: 600px;
+    }
+}
+
+/* Планшеты (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    body {
+        padding: 15px;
+    }
+
+    .container {
+        padding: 25px;
+        max-width: 900px;
+    }
+
+    h1 {
+        font-size: 2.2em;
+        margin-bottom: 15px;
+    }
+
+    .stats {
+        gap: 20px;
+    }
+
+    .stat-item {
+        padding: 8px 16px;
+        font-size: 1em;
+    }
+
+    .word-display {
+        margin-bottom: 35px;
+        min-height: 100px;
+    }
+
+    .word-text {
+        font-size: 3em;
+        margin-bottom: 20px;
+    }
+
+    .input-display {
+        font-size: 3em;
+        min-height: 65px;
+    }
+
+    .keyboard-container {
+        padding: 14px;
+        margin-bottom: 25px;
+    }
+
+    .keyboard {
+        gap: 5px;
+    }
+
+    .keyboard-row {
+        gap: 5px;
+    }
+
+    .key {
+        padding: 12px 9px;
+        min-width: 45px;
+        height: 45px;
+        font-size: 1em;
+    }
+
+    .key.wide {
+        min-width: 90px;
+    }
+
+    .key.extra-wide {
+        min-width: 135px;
+    }
+
+    .key-hint {
+        font-size: 0.65em;
+    }
+
+    .controls {
+        gap: 12px;
+    }
+
+    .btn {
+        padding: 14px 28px;
+        font-size: 1.1em;
+        min-height: 48px;
+    }
+
+    .settings-panel {
+        padding: 20px;
+        max-width: 550px;
+    }
+
+    .settings-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+    }
+
+    .setting-item {
+        font-size: 1.1em;
+    }
+
+    .mater-image {
+        max-width: 400px;
+    }
+
+    /* Упрощенный режим для планшета */
+    .simplified-mode .word-text {
+        font-size: 4em !important;
+    }
+
+    .simplified-mode .input-display {
+        font-size: 4em !important;
+    }
+
+    /* Крупный шрифт для планшета */
+    .font-large .word-text,
+    .font-large .input-display {
+        font-size: 3.5em;
+    }
+
+    .font-large .key {
+        min-width: 50px;
+        height: 50px;
+        font-size: 1.15em;
+    }
+
+    .font-extra-large .word-text,
+    .font-extra-large .input-display {
+        font-size: 4.5em;
+    }
+
+    .font-extra-large .key {
+        min-width: 65px;
+        height: 65px;
+        font-size: 1.4em;
+    }
+}
+
+/* Мобильные устройства (до 768px) */
+@media (max-width: 767px) {
     .word-text,
     .input-display {
         font-size: 2em;
@@ -625,6 +775,7 @@ h1 {
     align-items: center;
     z-index: 1000;
     animation: fadeIn 0.3s ease;
+    cursor: pointer;
 }
 
 .celebration-overlay.show {
@@ -636,6 +787,7 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
+    pointer-events: none;
 }
 
 .mater-image {
@@ -645,6 +797,8 @@ h1 {
     animation: bounceIn 0.6s ease, bounce 1s ease 0.6s infinite;
     z-index: 1001;
     filter: drop-shadow(0 10px 30px rgba(255, 255, 255, 0.3));
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .fireworks {
