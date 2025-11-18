@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Клавиатурный тренажер</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Клавиатурный тренажер</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">Слово:</span>
+                    <span id="word-number">0</span> / <span id="total-words">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Ошибок:</span>
+                    <span id="errors">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Точность:</span>
+                    <span id="accuracy">100%</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="word-display">
+                <div id="current-word" class="word-text"></div>
+                <div id="input-display" class="input-display"></div>
+            </div>
+
+            <div class="keyboard-container">
+                <div id="keyboard" class="keyboard"></div>
+            </div>
+
+            <div class="controls">
+                <button id="start-btn" class="btn btn-primary">Начать</button>
+                <button id="reset-btn" class="btn btn-secondary">Сбросить</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Оверлей с Мэтром и салютом -->
+    <div id="celebration-overlay" class="celebration-overlay">
+        <div class="celebration-content">
+            <img id="mater-image" src="img/m.png" alt="Мэтр" class="mater-image">
+            <div class="fireworks">
+                <div class="firework"></div>
+                <div class="firework"></div>
+                <div class="firework"></div>
+                <div class="firework"></div>
+                <div class="firework"></div>
+                <div class="firework"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
