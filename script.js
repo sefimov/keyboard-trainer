@@ -59,6 +59,7 @@ const keyboardLayout = [
 class KeyboardTrainer {
     constructor() {
         this.words = [];
+        this.allWords = [];
         this.currentWordIndex = 0;
         this.currentInput = '';
         this.errors = 0;
@@ -67,32 +68,74 @@ class KeyboardTrainer {
         this.currentKey = null;
         this.isCelebrating = false;
         this.pendingNextWord = false;
+        
+        // Настройки доступности
+        this.settings = {
+            soundFeedback: false,
+            fontSize: 'large',
+            simplifiedMode: true,
+            highContrast: false,
+            customWords: null
+        };
 
         this.init();
     }
 
     async init() {
+        this.loadSettings(); // Загружаем настройки сначала
         await this.loadWords();
         this.createKeyboard();
         this.setupEventListeners();
+        this.setupSettingsListeners();
+        this.applySettings();
         this.updateStats();
     }
 
     async loadWords() {
+        // Сначала проверяем, есть ли пользовательские слова в настройках
+        if (this.settings.customWords && this.settings.customWords.length > 0) {
+            this.allWords = [...this.settings.customWords];
+            this.words = [...this.allWords];
+            document.getElementById('total-words').textContent = this.words.length;
+            return;
+        }
+        
+        // Если пользовательских слов нет, загружаем из файла
         try {
             const response = await fetch('words.txt');
             const text = await response.text();
-            this.words = text
+            this.allWords = text
                 .split('\n')
                 .map(word => word.trim().toLowerCase())
                 .filter(word => word.length > 0);
-            document.getElementById('total-words').textContent = this.words.length;
+            this.words = [...this.allWords];
         } catch (error) {
             console.error('Ошибка загрузки слов:', error);
             // Fallback слова
-            this.words = ['привет', 'мир', 'компьютер', 'клавиатура'];
-            document.getElementById('total-words').textContent = this.words.length;
+            this.allWords = ['привет', 'мир', 'компьютер', 'клавиатура'];
+            this.words = [...this.allWords];
         }
+        document.getElementById('total-words').textContent = this.words.length;
+    }
+    
+    loadCustomWords() {
+        const customWordsText = document.getElementById('custom-words').value;
+        if (customWordsText.trim()) {
+            const words = customWordsText
+                .split('\n')
+                .map(word => word.trim().toLowerCase())
+                .filter(word => word.length > 0);
+            
+            if (words.length > 0) {
+                this.settings.customWords = words;
+                this.allWords = [...words];
+                this.words = [...words];
+                this.saveSettings();
+                document.getElementById('total-words').textContent = this.words.length;
+                return true;
+            }
+        }
+        return false;
     }
 
     createKeyboard() {
@@ -197,9 +240,11 @@ class KeyboardTrainer {
             this.currentInput += key;
             this.updateDisplay();
             this.highlightKey(key, 'correct');
+            this.playSound('correct');
 
             // Проверка завершения слова
             if (this.currentInput === currentWord) {
+                this.playSound('complete');
                 this.showCelebration();
                 this.pendingNextWord = true;
                 // Автоматическое скрытие через 15 секунд, если пользователь не нажал пробел
@@ -216,6 +261,7 @@ class KeyboardTrainer {
         } else {
             this.errors++;
             this.highlightKey(key, 'incorrect');
+            this.playSound('incorrect');
             this.updateStats();
         }
     }
@@ -370,6 +416,148 @@ class KeyboardTrainer {
         document.getElementById('current-word').textContent = '';
         document.getElementById('input-display').innerHTML = '';
         this.updateStats();
+    }
+
+    // Настройки доступности
+    loadSettings() {
+        const saved = localStorage.getItem('keyboardTrainerSettings');
+        if (saved) {
+            try {
+                this.settings = { ...this.settings, ...JSON.parse(saved) };
+            } catch (e) {
+                console.error('Ошибка загрузки настроек:', e);
+            }
+        }
+    }
+
+    saveSettings() {
+        localStorage.setItem('keyboardTrainerSettings', JSON.stringify(this.settings));
+    }
+
+    applySettings() {
+        const body = document.body;
+        const container = document.querySelector('.container');
+        
+        // Размер шрифта
+        body.classList.remove('font-large', 'font-extra-large');
+        if (this.settings.fontSize === 'large') {
+            body.classList.add('font-large');
+        } else if (this.settings.fontSize === 'extra-large') {
+            body.classList.add('font-extra-large');
+        }
+        
+        // Упрощенный режим
+        if (this.settings.simplifiedMode) {
+            container.classList.add('simplified-mode');
+        } else {
+            container.classList.remove('simplified-mode');
+        }
+        
+        // Высокий контраст
+        if (this.settings.highContrast) {
+            body.classList.add('high-contrast');
+        } else {
+            body.classList.remove('high-contrast');
+        }
+        
+        // Обновляем UI элементов настроек
+        this.updateSettingsUI();
+    }
+
+    updateSettingsUI() {
+        document.getElementById('sound-feedback').checked = this.settings.soundFeedback;
+        document.getElementById('simplified-mode').checked = this.settings.simplifiedMode;
+        document.getElementById('high-contrast').checked = this.settings.highContrast;
+        document.getElementById('font-size').value = this.settings.fontSize;
+        
+        // Загружаем пользовательские слова в textarea
+        if (this.settings.customWords && this.settings.customWords.length > 0) {
+            document.getElementById('custom-words').value = this.settings.customWords.join('\n');
+        } else {
+            // Показываем слова из файла
+            document.getElementById('custom-words').value = this.allWords.join('\n');
+        }
+    }
+
+    setupSettingsListeners() {
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsPanel = document.getElementById('settings-panel');
+        
+        settingsBtn.addEventListener('click', () => {
+            const isVisible = settingsPanel.style.display !== 'none';
+            settingsPanel.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                this.updateSettingsUI();
+            }
+        });
+        
+        // Чекбоксы
+        document.getElementById('sound-feedback').addEventListener('change', (e) => {
+            this.settings.soundFeedback = e.target.checked;
+            this.saveSettings();
+        });
+        
+        document.getElementById('simplified-mode').addEventListener('change', (e) => {
+            this.settings.simplifiedMode = e.target.checked;
+            this.saveSettings();
+            this.applySettings();
+        });
+        
+        document.getElementById('high-contrast').addEventListener('change', (e) => {
+            this.settings.highContrast = e.target.checked;
+            this.saveSettings();
+            this.applySettings();
+        });
+        
+        // Селекты
+        document.getElementById('font-size').addEventListener('change', (e) => {
+            this.settings.fontSize = e.target.value;
+            this.saveSettings();
+            this.applySettings();
+        });
+        
+        // Кнопка сохранения слов
+        document.getElementById('save-words-btn').addEventListener('click', () => {
+            if (this.loadCustomWords()) {
+                alert(`Сохранено ${this.words.length} слов(а)!`);
+                this.reset();
+            } else {
+                alert('Пожалуйста, введите хотя бы одно слово (по одному на строку)');
+            }
+        });
+    }
+
+    playSound(type) {
+        if (!this.settings.soundFeedback) return;
+        
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'correct') {
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+            } else if (type === 'incorrect') {
+                oscillator.frequency.value = 300;
+                oscillator.type = 'sawtooth';
+            } else if (type === 'complete') {
+                // Восходящая мелодия для завершения
+                oscillator.frequency.value = 600;
+                oscillator.type = 'sine';
+            }
+            
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.15);
+        } catch (e) {
+            // Игнорируем ошибки звука
+        }
     }
 }
 
